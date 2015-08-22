@@ -1,0 +1,6 @@
+{
+    "name": "virge/core",
+    "autoload": {
+        "psr-4": {"Virge\\": "Virge/"}
+    }
+}
