@@ -259,6 +259,11 @@ class Model {
         foreach ($temp as $t) {
             $method .= ucfirst($t);
         }
-        return call_user_func_array(array($this, $method), array());
+        
+        if(method_exists($this, $method)){
+            return call_user_func_array(array($this, $method), array());
+        }
+        
+        return isset($this->$key) ? $this->$key : null;
     }
 }
