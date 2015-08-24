@@ -253,17 +253,6 @@ class Model {
             throw new \InvalidArgumentException("key must be a string");
         }
         
-        //build method call
-        $temp = explode('_', $key);
-        $method = 'get';
-        foreach ($temp as $t) {
-            $method .= ucfirst($t);
-        }
-        
-        if(method_exists($this, $method)){
-            return call_user_func_array(array($this, $method), array());
-        }
-        
         return isset($this->$key) ? $this->$key : null;
     }
 }

@@ -10,13 +10,13 @@ use Virge\Virge;
  */
 abstract class BaseReactor {
     
-    protected $_capsules = [];
+    protected $_capsules = array();
     
     /**
      * Register different capsules that we can use
      * @param array $capsules
      */
-    public function registerCapsules($capsules = []) {
+    public function registerCapsules($capsules = array()) {
         //todo: check cache
         foreach($capsules as $capsule) {
             //todo: load anything we need to, configs, etc
@@ -26,7 +26,7 @@ abstract class BaseReactor {
             $capsuleDir = dirname($reflector->getFileName()) . '/config/';
             $capsuleArray = Virge::dirToArray($capsuleDir);
             //crawl the config directory if it exists
-            $files = $capsuleArray ? $capsuleArray['file'] : [];
+            $files = $capsuleArray ? $capsuleArray['file'] : array();
             foreach($files as $file) {
                 require_once $capsuleDir . $file;
             }
@@ -39,7 +39,7 @@ abstract class BaseReactor {
      * @param string $service
      * @param array $arguments
      */
-    public function run($environment = 'dev', $service = null, $method = null, $arguments = []) {
+    public function run($environment = 'dev', $service = null, $method = null, $arguments = array()) {
         $this->registerCapsules();
         $this->entry($service, $method, $arguments);
     }
@@ -50,6 +50,6 @@ abstract class BaseReactor {
      * @param array $arguments
      */
     protected function entry($service, $method, $arguments) {
-        return call_user_func_array([Virge::service($service), $method], $arguments);
+        return call_user_func_array(array(Virge::service($service), $method), $arguments);
     }
 }

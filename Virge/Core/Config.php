@@ -17,7 +17,7 @@ class Config {
             return isset(self::$_config[$name]) ? self::$_config[$name] : null;
         }
         //TODO: check cache
-        $config = [];
+        $config = array();
         
         $reflector = new \ReflectionClass('Reactor');
         $appPath = dirname($reflector->getFileName()) . '/';
