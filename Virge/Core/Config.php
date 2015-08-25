@@ -22,6 +22,8 @@ class Config {
         $reflector = new \ReflectionClass('Reactor');
         $appPath = dirname($reflector->getFileName()) . '/';
         
+        $basePath = str_replace('/app', '', $appPath);
+        
         //load config file(s)
         $configPath = $appPath . 'config/';
         $configFiles = Virge::dirToArray($configPath);
@@ -33,6 +35,7 @@ class Config {
         }
         
         //setup paths
+        $config['base_path'] = $basePath;
         $config['app_path'] = $appPath;
         $config['config_path'] = $configPath;
         self::$_config = $config;
