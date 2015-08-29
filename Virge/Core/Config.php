@@ -14,7 +14,13 @@ class Config {
     public static function get($name, $key = null) {
         
         if(self::$_config){
-            return isset(self::$_config[$name]) ? self::$_config[$name] : null;
+            
+            $config = isset(self::$_config[$name]) ? self::$_config[$name] : null;
+            if(!$config || !$key){
+                return $config;
+            }
+
+            return isset($config[$key]) ? $config[$key] : null;
         }
         //TODO: check cache
         $config = array();
