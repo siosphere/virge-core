@@ -29,7 +29,7 @@ class Config {
         $configFiles = Virge::dirToArray($configPath);
         if($configFiles){
             foreach($configFiles['file'] as $configFile) {
-                if(strpos($configFile, '.dist') !== -1) {
+                if(strpos($configFile, '.dist') !== false) {
                     continue;
                 }
                 $configName = self::getConfigNameFromFile($configFile);
