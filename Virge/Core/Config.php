@@ -11,7 +11,7 @@ class Config {
     
     protected static $_config = null;
     
-    public static function get($name) {
+    public static function get($name, $key = null) {
         
         if(self::$_config){
             return isset(self::$_config[$name]) ? self::$_config[$name] : null;
@@ -43,7 +43,12 @@ class Config {
         $config['config_path'] = $configPath;
         self::$_config = $config;
         
-        return isset(self::$_config[$name]) ? self::$_config[$name] : null;
+        $config = isset(self::$_config[$name]) ? self::$_config[$name] : null;
+        if(!$config || !$key){
+            return $config;
+        }
+        
+        return isset($config[$key]) ? $config[$key] : null;
     }
     
     /**
