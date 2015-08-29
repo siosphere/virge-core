@@ -49,12 +49,55 @@ class Config {
         $config['config_path'] = $configPath;
         self::$_config = $config;
         
+        self::setupConfig();
+        
         $config = isset(self::$_config[$name]) ? self::$_config[$name] : null;
         if(!$config || !$key){
             return $config;
         }
         
         return isset($config[$key]) ? $config[$key] : null;
+    }
+    
+    /**
+     * Setup our configs
+     */
+    protected static function setupConfig(){
+        foreach(self::$_config as $configType => $config) {
+            self::$_config[$configType] = self::replaceConfigVariables($config);
+        }
+    }
+    
+    /**
+     * Replace variables
+     * @param array $config
+     * @return array
+     */
+    protected static function replaceConfigVariables($config) {
+        
+        if(!is_array($config)){
+            return $config;
+        }
+        
+        $replacements = array(
+            '{year}'        =>      date('Y'),
+            '{month}'       =>      date('m'),
+            '{day}'         =>      date('d'),
+            '{hour}'        =>      date('H'),
+            '{minute}'      =>      date('i'),
+            '{second}'      =>      date('s'),
+        );
+        
+        foreach($config as $key => $value) {
+            if(is_array($value)){
+                $config[$key] = self::replaceConfigVariables($value);
+            }
+            if(is_string($value)){
+                $config[$key] = str_replace(array_keys($replacements), array_values($replacements), $value);
+            }
+        }
+        
+        return $config;
     }
     
     /**
