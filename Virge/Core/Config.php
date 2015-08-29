@@ -29,6 +29,9 @@ class Config {
         $configFiles = Virge::dirToArray($configPath);
         if($configFiles){
             foreach($configFiles['file'] as $configFile) {
+                if(strpos($configFile, '.dist') !== -1) {
+                    continue;
+                }
                 $configName = self::getConfigNameFromFile($configFile);
                 $config[$configName] = include_once $configPath . $configFile;
             }
