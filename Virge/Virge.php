@@ -45,10 +45,15 @@ class Virge {
      * 
      * @param string $serviceName
      * @param string $serviceClass
+     * @return mixed
      */
     public static function registerService($serviceName, $serviceClass) {
         
-        self::$_services[$serviceName] = new $serviceClass();
+        if(is_object($serviceClass)){
+            return self::$_services[$serviceName] = $serviceClass;
+        }
+        
+        return self::$_services[$serviceName] = new $serviceClass();
     }
 
     /**
