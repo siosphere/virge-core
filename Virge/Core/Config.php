@@ -22,13 +22,21 @@ class Config {
 
             return isset($config[$key]) ? $config[$key] : null;
         }
-        //TODO: check cache
-        $config = array();
         
         $reflector = new \ReflectionClass('Reactor');
         $appPath = dirname($reflector->getFileName()) . '/';
         
         $basePath = str_replace('/app', '', $appPath);
+        
+        if(is_file($appPath . 'config/_compiled.php')) {
+            self::$_config = unserialize(file_get_contents($appPath . 'config/_compiled.php'));
+            
+            if(self::$_config !== false) {
+                return self::get($name, $key);
+            }
+        }
+        
+        $config = array();
         
         //load config file(s)
         $configPath = $appPath . 'config/';
@@ -106,7 +114,7 @@ class Config {
      * @return string
      */
     protected static function getConfigNameFromFile($file) {
-        return str_replace('.php', '', strtolower($file));
+        return str_replace(array('.php.dist', '.php', '.dist'), '', strtolower($file));
     }
     
     /**
@@ -124,5 +132,37 @@ class Config {
         $capsuleDir = dirname($reflector->getFileName()) . '/';
         
         return $capsuleDir . $path;
+    }
+    
+    /**
+     * Compile the config
+     */
+    public static function compile() {
+        $configPath = self::get('app_path') . 'config/';
+        $configFiles = Virge::dirToArray($configPath);
+        
+        $distConfigs = array();
+        
+        if($configFiles){
+            foreach($configFiles['file'] as $configFile) {
+                if(strpos($configFile, '.dist') === false) {
+                    continue;
+                }
+                $configName = self::getConfigNameFromFile($configFile);
+                $distConfigs[$configName] = include_once $configPath . $configFile;
+            }
+        }
+        
+        $compiledConfig = array();
+        foreach(self::$_config as $name => $config) {
+            if(isset($distConfigs[$name])) {
+                $distConfig = $distConfigs[$name];
+                $compiledConfig[$name] = array_replace_recursive($distConfig, $config);
+            } else {
+                $compiledConfig[$name] = $config;
+            }
+        }
+        
+        file_put_contents($configPath . '_compiled.php', serialize($compiledConfig));
     }
 }
