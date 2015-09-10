@@ -39,7 +39,7 @@ abstract class BaseReactor {
                 //crawl the config directory if it exists
                 $files = $capsuleArray ? $capsuleArray['file'] : array();
                 foreach($files as $file) {
-                    $toCache .= file_get_contents($capsuleDir . $file) . "\n";
+                    $toCache .= str_replace(array("<?php", "?>"), '', file_get_contents($capsuleDir . $file)) . "\n";
                     require_once $capsuleDir . $file;
                 }
             }
@@ -47,7 +47,7 @@ abstract class BaseReactor {
         
         if(!$cached && Config::get('app', 'environment') === 'production') {
             //save cache
-            file_put_contents($cachePath . 'reactor.cache.php', $toCache);
+            file_put_contents($cachePath . 'reactor.cache.php', "<?php\n" . $toCache);
         }
     }
     
