@@ -47,8 +47,35 @@ abstract class BaseReactor {
         
         if(!$cached && Config::get('app', 'environment') === 'production') {
             //save cache
-            file_put_contents($cachePath . 'reactor.cache.php', "<?php\n" . $toCache);
+            file_put_contents($cachePath . 'reactor.cache.php', "<?php\n" . $this->sanitizeCache($toCache));
         }
+    }
+    
+    /**
+     * Consilidate the use statements and move them to the top
+     * @param string $cache
+     * @return string
+     */
+    protected function sanitizeCache($cache) {
+        $lines = explode("\n", $cache);
+        
+        $uses = array();
+        $cleanOutput = "";
+        foreach($lines as $line) {
+            $cleanLine = trim($line);
+            
+            if(strpos($cleanLine, "use ") !== false) {
+                if(!in_array($cleanLine, $uses)) {
+                    $uses[] = $cleanLine;
+                }
+                continue;
+            }
+            
+            $cleanOutput .= $cleanLine . "\n";
+        }
+        
+        return implode("\n", $uses) . "\n" . $cleanOutput;
+        
     }
     
     /**
