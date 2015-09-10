@@ -125,7 +125,7 @@ class Config {
         $data = explode('@', $capsulePath);
         
         $capsule = $data[0];
-        $path = $data[1];
+        $path = isset($data[1]) ? $data[1] : '';
         
         //TODO: look up cached path
         $reflector = new \ReflectionClass($capsule . '\\Capsule');
