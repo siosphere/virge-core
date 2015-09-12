@@ -45,6 +45,10 @@ abstract class BaseReactor {
             }
         }
         
+        foreach($capsule as $capsule) {
+            $capsule->registerCapsule();
+        }
+        
         if(!$cached && Config::get('app', 'environment') === 'production') {
             //save cache
             file_put_contents($cachePath . 'reactor.cache.php', "<?php\n" . $this->sanitizeCache($toCache));
