@@ -45,7 +45,7 @@ abstract class BaseReactor {
             }
         }
         
-        foreach($capsule as $capsule) {
+        foreach($capsules as $capsule) {
             $capsule->registerCapsule();
         }
         
