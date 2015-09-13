@@ -249,14 +249,15 @@ class Model {
     /**
      * Get value (will call getter )
      * @param string $key
+     * @param mixed $defaultValue
      * @return mixed
      * @throws \InvalidArgumentException
      */
-    public function get($key) {
+    public function get($key, $defaultValue = null) {
         if(!is_string($key)){
             throw new \InvalidArgumentException("key must be a string");
         }
         
-        return isset($this->$key) ? $this->$key : null;
+        return isset($this->$key) ? $this->$key : $defaultValue;
     }
 }
