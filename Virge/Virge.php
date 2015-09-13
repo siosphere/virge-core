@@ -193,4 +193,17 @@ class Virge {
         }
         return $xml_array;
     }
+    
+    /**
+     * Provide an anonymous function wrapper around a virge service for
+     * easily including in callback functions, such as array_map, and 
+     * usort
+     * @param string $serviceId
+     * @param string $method
+     */
+    public static function callback($serviceId, $method) {
+        return function() use ($serviceId, $method) {
+            return call_user_func_array([Virge::service($serviceId), $method], func_get_args());
+        };
+    }
 }
