@@ -203,7 +203,7 @@ class Virge {
      */
     public static function callback($serviceId, $method) {
         return function() use ($serviceId, $method) {
-            return call_user_func_array([Virge::service($serviceId), $method], func_get_args());
+            return call_user_func_array(array(Virge::service($serviceId), $method), func_get_args());
         };
     }
 }
