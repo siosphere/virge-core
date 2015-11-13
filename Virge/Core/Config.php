@@ -122,13 +122,20 @@ class Config {
      * @param string $path
      */
     public static function path($capsulePath) {
+        
         $data = explode('@', $capsulePath);
         
         $capsule = $data[0];
         $path = isset($data[1]) ? $data[1] : '';
         
         //TODO: look up cached path
-        $reflector = new \ReflectionClass($capsule . '\\Capsule');
+        try {
+            $reflector = new \ReflectionClass($capsule . '\\Capsule');
+        } catch( \Exception $ex) {
+            $capsuleData = explode('\\', $capsule);
+            $capsuleName = end($capsuleData);
+            $reflector = new \ReflectionClass($capsule . '\\' . $capsuleName . 'Capsule');
+        }
         $capsuleDir = dirname($reflector->getFileName()) . '/';
         
         return $capsuleDir . $path;
