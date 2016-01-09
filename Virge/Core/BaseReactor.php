@@ -34,7 +34,7 @@ abstract class BaseReactor {
             
             if(!$cached) {
                 $reflector = new \ReflectionClass(get_class($capsule));
-                $capsuleDir = dirname($reflector->getFileName()) . '/config/';
+                $capsuleDir = !is_dir(dirname($reflector->getFileName()) . '/config/') ? $this->getConfigDirectory(dirname($reflector->getFileName())) : dirname($reflector->getFileName()) . '/config/';
                 $capsuleArray = Virge::dirToArray($capsuleDir);
                 //crawl the config directory if it exists
                 $files = $capsuleArray ? $capsuleArray['file'] : array();
@@ -53,6 +53,12 @@ abstract class BaseReactor {
             //save cache
             file_put_contents($cachePath . 'reactor.cache.php', "<?php\n" . $this->sanitizeCache($toCache));
         }
+    }
+    
+    protected function getConfigDirectory($directory) {
+        $prefix = Config::get('app', 'resource_dir') ?: '/';
+        
+        return $directory . $prefix . 'config/';
     }
     
     /**
