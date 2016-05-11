@@ -49,14 +49,25 @@ abstract class BaseReactor {
             $capsule->registerCapsule();
         }
         
-        if(!$cached && Config::get('app', 'environment') === 'production') {
+        if(!$cached && Config::get('app', 'cache_reactor') === true) {
             //save cache
             file_put_contents($cachePath . 'reactor.cache.php', "<?php\n" . $this->sanitizeCache($toCache));
         }
     }
     
     protected function getConfigDirectory($directory) {
-        $prefix = Config::get('app', 'resource_dir') ?: '/';
+        
+        $possible = [
+            '/',
+            '/resources/',
+            Config::get('app', 'resource_dir')
+        ];
+        
+        foreach($possible as $prefix) {
+            if(is_dir($directory . $prefix . 'config/')) {
+                break;
+            }
+        }
         
         return $directory . $prefix . 'config/';
     }
