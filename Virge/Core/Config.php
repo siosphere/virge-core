@@ -10,6 +10,13 @@ use Virge\Virge;
 class Config {
     
     protected static $_config = null;
+
+    public static function env($key, $default = null)
+    {
+        $envValue = getenv($key);
+
+        return $envValue !== false ? $envValue : $default;
+    }
     
     public static function get($name, $key = null) {
         
