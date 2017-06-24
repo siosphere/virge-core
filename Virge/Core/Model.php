@@ -223,7 +223,8 @@ class Model {
      * @return boolean
      * @throws \InvalidArgumentException
      */
-    public function set($key, $value){
+    public function set($key, $value)
+    {
         if(!is_string($key)){
             throw new \InvalidArgumentException("key must be a string");
         }
@@ -240,7 +241,7 @@ class Model {
         }
         
         if(method_exists($this, $method)){
-            return call_user_func_array(array($this, $method), array());
+            return call_user_func_array(array($this, $method), [$value]);
         }
         
         return $this->{$key} = $value;
