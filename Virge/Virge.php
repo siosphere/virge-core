@@ -1,124 +1,150 @@
 <?php
-
 namespace Virge;
+
+use Virge\Core\{
+    BaseReactor,
+    Capsule
+};
+
+use Virge\Core\Exception\{
+    InvalidServiceException
+};
 
 /**
  * Virge Framework
  * 
  */
+class Virge 
+{
+    protected static $environment = '';
 
-class Virge {
-    
     /**
-     * What is our current release state?, this will help to know what config 
-     * files to load
-     * @var string
-     */
-    public static $releaseState = 'dev';
-    
-    /**
-     * What is our current app?
-     * @var 
-     */
-    protected static $_app = NULL;
-    
-    /**
-     * Holds our handlers, models, etc
+     * Holds capsules, models, etc
      * @var array
      */
-    private static $a_DataPool;
+    private static $registry = [];
     
     /**
      * Holds our services
      * @var array 
      */
-    protected static $_services = array();
+    protected static $services = [];
+
+    protected static $capsules = [];
+
+    protected static $reactor;
     
     /**
      * Holds our config
      * @var array
      */
     private static $config;
+
+    public static function setReactor(BaseReactor $reactor)
+    {
+        self::$reactor = $reactor;
+    }
+
+    public static function reactor() : BaseReactor 
+    {
+        return self::$reactor;
+    }
+
+    public static function setEnvironment(string $environment)
+    {
+        self::$environment = $environment;
+    }
+
+    public static function getEnvironment() : string 
+    {
+        return self::$environment;
+    }
     
     /**
      * Register a service
-     * 
-     * @param string $serviceName
-     * @param string $serviceClass
-     * @return mixed
      */
-    public static function registerService($serviceName, $serviceClass) {
-        
+    public static function registerService(string $serviceName, $serviceClass) 
+    {
         if(is_object($serviceClass)){
-            return self::$_services[$serviceName] = $serviceClass;
+            return self::$services[$serviceName] = $serviceClass;
         }
         
-        return self::$_services[$serviceName] = new $serviceClass();
+        return self::$services[$serviceName] = new $serviceClass();
+    }
+
+    /**
+     * Register a capsule
+     */
+    public static function registerCapsule(Capsule $capsule)
+    {
+        if(!self::$registry['capsule']) {
+            self::$registry['capsule'] = [];
+        }
+
+        return self::$registry['capsule'][get_class($capsule)] = $capsule;
+    }
+
+    public static function getCapsules() : array 
+    {
+        return self::$registry['capsule'] ?? [];
     }
 
     /**
      * Return all our available services
-     * @return array
      */
-    public static function getServices() {
-        return self::$_services;
+    public static function getServices() : array
+    {
+        return self::$services;
     }
 
     /**
      * Return a service by name
-     * @param type $service_name
-     * @return type
-     * @throws InvalidArgumentException
+     * @throws InvalidServiceException
      */
-    public static function service($service_name) {
-        if (isset(self::$_services[$service_name])) {
-            return self::$_services[$service_name];
+    public static function service(string $serviceName) {
+
+        if (!array_key_exists($serviceName, self::$services)) {
+            throw new InvalidServiceException('Invalid service: ' . $service_name);
         }
-        
-        throw new \InvalidArgumentException('Invalid service: ' . $service_name);
+
+        return self::$services[$serviceName];
     }
 
     /**
-     * Run Everything
-     * @param string $app
-     * @param string $service
-     * @param array $arguments
+     * Register an item into the registry
      */
-    public static function run($app = 'base', $service = '', $arguments = array()) {
-        
+    public static function register(string $key, $value) 
+    {
+        self::$registry['store'][$key] = $value;
+
+        return $value;
     }
 
-
-    /**
-     * Register a Model into the data pool
-     * @param string $ident
-     * @param object $object
-     * @return object
-     */
-    public static function register($ident, $object) {
-        self::$a_DataPool['model'][$ident] = $object;
-        return $object;
-    }
-
-    /**
-     * Return a registered model object
-     * @param string $ident
-     * @return object
-     */
-    public static function getModel($ident) {
-        if (isset(self::$a_DataPool['model'][$ident])) {
-            return self::$a_DataPool['model'][$ident];
+    public static function get(string $key)
+    {
+        if(!array_key_exists($key, self::$registry['store'])) {
+            return null;
         }
-        return NULL;
+
+        return self::$registry['store'][$key];
+    }
+
+    /**
+     * @deprecated
+     */
+    public static function getModel(string $key) 
+    {
+        return self::get($key);
     }
 
     /**
      * Directory to Array
      * @param $dir
      */
-    public static function dirToArray($dir) {
+    public static function dirToArray($dir)
+    {
         if (is_dir($dir)) {
-            $temp = array();
+            $temp = [];
             if ($handle = opendir($dir)) {
                 while (($file = readdir($handle)) !== false) {
                     if (is_dir($dir . $file)) {
@@ -142,8 +168,9 @@ class Virge {
      * @author vladimir_wof_nikolaich_dot_ru
      * @param string $string
      */
-    public static function xml2Array($string) {
-        $xml_values = array();
+    public static function xml2Array($string) 
+    {
+        $xml_values = [];
         $contents = $string;
         $parser = xml_parser_create('');
         if (!$parser)
@@ -155,11 +182,11 @@ class Virge {
         xml_parse_into_struct($parser, trim($contents), $xml_values);
         xml_parser_free($parser);
         if (!$xml_values)
-            return array();
+            return [];
 
-        $xml_array = array();
+        $xml_array = [];
         $last_tag_ar = & $xml_array;
-        $parents = array();
+        $parents = [];
         $last_counter_in_tag = array(1 => 0);
         foreach ($xml_values as $data) {
             switch ($data['type']) {
@@ -201,7 +228,8 @@ class Virge {
      * @param string $serviceId
      * @param string $method
      */
-    public static function callback($serviceId, $method) {
+    public static function callback(string $serviceId, string $method) 
+    {
         return function() use ($serviceId, $method) {
             return call_user_func_array(array(Virge::service($serviceId), $method), func_get_args());
         };

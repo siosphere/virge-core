@@ -7,7 +7,8 @@ use Virge\Virge;
  * 
  * @author Michael Kramer
  */
-class Config {
+class Config 
+{
     
     protected static $_config = null;
 
@@ -18,35 +19,52 @@ class Config {
         return $envValue !== false ? $envValue : $default;
     }
     
-    public static function get($name, $key = null) {
+    public static function get($configName, $key = null, $defaultValue = null) 
+    {
         
-        if(self::$_config){
-            
-            $config = isset(self::$_config[$name]) ? self::$_config[$name] : null;
-            if(!$config || !$key){
-                return $config;
-            }
-
-            return isset($config[$key]) ? $config[$key] : null;
+        if(!self::$_config){
+            self::setupConfig();
         }
-        
-        $reflector = new \ReflectionClass('Reactor');
+            
+        $config = self::$_config[$configName] ?? null;
+
+        if(!$key){
+            return $config;
+        }
+
+        if(!$config) {
+            return $defaultValue;
+        }
+
+        return $config[$key] ?? $defaultValue;
+    }
+    
+    public static function setupReactor(BaseReactor $reactor)
+    {
+        $reflector = new \ReflectionClass($reactor);
         $appPath = dirname($reflector->getFileName()) . '/';
         
         $basePath = str_replace('/app', '', $appPath);
-        
-        if(is_file($appPath . 'config/_compiled.php')) {
-            self::$_config = unserialize(file_get_contents($appPath . 'config/_compiled.php'));
+
+        self::setupConfig($basePath, $appPath);
+    }
+    /**
+     * Setup our configs
+     */
+    public static function setupConfig($baseDir = '', $appDir = '')
+    {
+        if(is_file($appDir . 'config/_compiled.php')) {
+            self::$_config = unserialize(file_get_contents($appDir . 'config/_compiled.php'));
             
             if(self::$_config !== false) {
                 return self::get($name, $key);
             }
         }
         
-        $config = array();
+        $config = [];
         
         //load config file(s)
-        $configPath = $appPath . 'config/';
+        $configPath = $appDir . 'config/';
         $configFiles = Virge::dirToArray($configPath);
         if($configFiles){
             foreach($configFiles['file'] as $configFile) {
@@ -59,25 +77,11 @@ class Config {
         }
         
         //setup paths
-        $config['base_path'] = $basePath;
-        $config['app_path'] = $appPath;
+        $config['base_path'] = $baseDir;
+        $config['app_path'] = $appDir;
         $config['config_path'] = $configPath;
         self::$_config = $config;
         
-        self::setupConfig();
-        
-        $config = isset(self::$_config[$name]) ? self::$_config[$name] : null;
-        if(!$config || !$key){
-            return $config;
-        }
-        
-        return isset($config[$key]) ? $config[$key] : null;
-    }
-    
-    /**
-     * Setup our configs
-     */
-    protected static function setupConfig(){
         foreach(self::$_config as $configType => $config) {
             self::$_config[$configType] = self::replaceConfigVariables($config);
         }
@@ -88,7 +92,8 @@ class Config {
      * @param array $config
      * @return array
      */
-    protected static function replaceConfigVariables($config) {
+    protected static function replaceConfigVariables($config)
+    {
         
         if(!is_array($config)){
             return $config;
@@ -120,7 +125,8 @@ class Config {
      * @param string $file
      * @return string
      */
-    protected static function getConfigNameFromFile($file) {
+    protected static function getConfigNameFromFile($file)
+    {
         return str_replace(array('.php.dist', '.php', '.dist'), '', strtolower($file));
     }
     
@@ -128,8 +134,8 @@ class Config {
      * Get absolute path
      * @param string $path
      */
-    public static function path($capsulePath) {
-        
+    public static function path($capsulePath)
+    {
         $data = explode('@', $capsulePath);
         
         $capsule = $data[0];
@@ -151,7 +157,8 @@ class Config {
     /**
      * Compile the config
      */
-    public static function compile() {
+    public static function compile()
+    {
         $configPath = self::get('app_path') . 'config/';
         $configFiles = Virge::dirToArray($configPath);
         

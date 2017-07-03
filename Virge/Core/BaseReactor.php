@@ -2,23 +2,24 @@
 
 namespace Virge\Core;
 
-use Virge\Core\Config;
 use Virge\Virge;
 
 /**
  * 
  * @author Michael Kramer
  */
-abstract class BaseReactor {
-    
-    protected $_capsules = array();
+abstract class BaseReactor 
+{
+    protected $_capsules = [];
+
+    protected $_events = [];
     
     /**
      * Register different capsules that we can use
-     * @param array $capsules
      */
-    public function registerCapsules($capsules = array()) {
-        
+    public function registerCapsules(array $capsules = []) 
+    {
+        Config::setupReactor($this);
         $cachePath = Config::get('base_path') . 'storage/cache/';
         if(is_file($cachePath . 'reactor.cache.php')) {
             require_once $cachePath . 'reactor.cache.php';
@@ -33,11 +34,11 @@ abstract class BaseReactor {
             $this->_capsules[] = $capsule;
             
             if(!$cached) {
-                $reflector = new \ReflectionClass(get_class($capsule));
-                $capsuleDir = !is_dir(dirname($reflector->getFileName()) . '/config/') ? $this->getConfigDirectory(dirname($reflector->getFileName())) : dirname($reflector->getFileName()) . '/config/';
+                $mainDir = $capsule->getDirectory();
+                $capsuleDir = !is_dir($mainDir . '/config/') ? $this->getConfigDirectory($mainDir) : $mainDir . '/config/';
                 $capsuleArray = Virge::dirToArray($capsuleDir);
                 //crawl the config directory if it exists
-                $files = $capsuleArray ? $capsuleArray['file'] : array();
+                $files = $capsuleArray ? $capsuleArray['file'] : [];
                 foreach($files as $file) {
                     $toCache .= str_replace(array("<?php", "?>"), '', file_get_contents($capsuleDir . $file)) . "\n";
                     require_once $capsuleDir . $file;
@@ -54,9 +55,33 @@ abstract class BaseReactor {
             file_put_contents($cachePath . 'reactor.cache.php', "<?php\n" . $this->sanitizeCache($toCache));
         }
     }
+
+    public function on($eventClass, $callable)
+    {
+        if(!array_key_exists($eventClass, $this->_events)) {
+            $this->_events[$eventClass] = [];
+        }
+
+        $this->_events[$eventClass][] = $callable;
+
+        return $this;
+    }
+
+    protected function dispatch(Event $event)
+    {
+        $eventName = get_class($event);
+        if(!array_key_exists($eventName, $this->_events)) {
+            return;
+        }
+
+        foreach($this->_events[$eventName] as $listener)
+        {
+            call_user_func_array($listener, [$event]);
+        }
+    }
     
-    protected function getConfigDirectory($directory) {
-        
+    protected function getConfigDirectory($directory)
+    {
         $possible = [
             '/',
             '/resources/',
@@ -77,10 +102,11 @@ abstract class BaseReactor {
      * @param string $cache
      * @return string
      */
-    protected function sanitizeCache($cache) {
+    protected function sanitizeCache($cache)
+    {
         $lines = explode("\n", $cache);
         
-        $uses = array();
+        $uses = [];
         $cleanOutput = "";
         foreach($lines as $line) {
             $cleanLine = trim($line);
@@ -98,6 +124,14 @@ abstract class BaseReactor {
         return implode("\n", $uses) . "\n" . $cleanOutput;
         
     }
+
+    public function bootstrap(string $environment)
+    {
+        Virge::setEnvironment($environment);
+        Virge::setReactor($this);
+        //TODO: load cache 
+        $this->registerCapsules();
+    }
     
     /**
      * Run our Reactor
@@ -105,17 +139,24 @@ abstract class BaseReactor {
      * @param string $service
      * @param array $arguments
      */
-    public function run($environment = 'dev', $service = null, $method = null, $arguments = array()) {
-        $this->registerCapsules();
+    public function run(string $environment = 'dev', string $service = null, string $method = null, array $arguments = [])
+    {
+        $this->bootstrap($environment);
         $this->entry($service, $method, $arguments);
     }
-    
+
+    public function getCapsules() : array
+    {
+        return $this->_capsules;
+    }
+
     /**
      * Enter into a service
      * @param string $service
      * @param array $arguments
      */
-    protected function entry($service, $method, $arguments) {
-        return call_user_func_array(array(Virge::service($service), $method), $arguments);
+    protected function entry(string $service, string $method, array $arguments = [])
+    {
+        return call_user_func_array([Virge::service($service), $method], $arguments);
     }
 }

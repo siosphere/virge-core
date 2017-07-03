@@ -6,7 +6,9 @@ use Virge\Virge;
  * 
  * @author Michael Kramer
  */
-abstract class Capsule {
+abstract class Capsule 
+{
+    protected $directory;
     
     /**
      * Register this capsule with the reactor
@@ -21,5 +23,17 @@ abstract class Capsule {
      */
     public static function registerService($serviceName, $serviceClass) {
         Virge::registerService($serviceName, $serviceClass);
+    }
+
+    public function getDirectory() : string
+    {
+        if($this->directory) {
+            return $this->directory;
+        }
+
+        //
+        $reflector = new \ReflectionClass($this);
+
+        return $this->directory = dirname($reflector->getFileName()) . '/';
     }
 }
