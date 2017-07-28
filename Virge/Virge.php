@@ -68,6 +68,10 @@ class Virge
         if(is_object($serviceClass)){
             return self::$services[$serviceName] = $serviceClass;
         }
+
+        if(is_callable($serviceClass)) {
+            return self::$services[$serviceName] = $serviceClass;
+        }
         
         return self::$services[$serviceName] = new $serviceClass();
     }
@@ -104,7 +108,11 @@ class Virge
     public static function service(string $serviceName) {
 
         if (!array_key_exists($serviceName, self::$services)) {
-            throw new InvalidServiceException('Invalid service: ' . $service_name);
+            throw new InvalidServiceException('Invalid service: ' . $serviceName);
+        }
+
+        if(is_callable(self::$services[$serviceName])) {
+            return self::$services[$serviceName] = call_user_func(self::$services[$serviceName]);
         }
 
         return self::$services[$serviceName];
