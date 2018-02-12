@@ -48,7 +48,7 @@ class LogService
         return $this->log($message, self::LEVEL_DEBUG, $data);
     }
 
-    public function exception(\Exception $ex, $data = [])
+    public function exception(\Throwable $ex, $data = [])
     {
         return $this->error("(".get_class($ex).": " . $ex->getMessage() . " )", $data);
     }
