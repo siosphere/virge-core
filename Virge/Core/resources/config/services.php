@@ -5,4 +5,6 @@ use Virge\Core\Service\{
 };
 use Virge\Virge;
 
-Virge::registerService(LogService::SERVICE_ID, new LogService(Config::get('app', 'log_file') ?? '/tmp/virge.log'));
+Virge::registerService(LogService::SERVICE_ID, function() {
+    return new LogService(Config::get('app', 'log_file') ?? '/tmp/virge.log');
+});

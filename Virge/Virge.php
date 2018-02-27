@@ -63,8 +63,18 @@ class Virge
     /**
      * Register a service
      */
-    public static function registerService(string $serviceName, callable $serviceLoader) 
+    public static function registerService(string $serviceName, $serviceLoader) 
     {
+        if(is_string($serviceLoader)) {
+            return self::$services[$serviceName] = function() use($serviceLoader) {
+                return new $serviceLoader;
+            };
+        }
+
+        if(!is_callable($serviceLoader)) {
+            throw new InvalidServiceException("Virge::registerService requires a className or callable");
+        }
+
         return self::$services[$serviceName] = $serviceLoader;
     }
 
