@@ -57,7 +57,7 @@ class Config
             self::$_config = unserialize(file_get_contents($appDir . 'config/_compiled.php'));
             
             if(self::$_config !== false) {
-                return self::get($name, $key);
+                return;
             }
         }
         

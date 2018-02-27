@@ -113,7 +113,7 @@ class Virge
             throw new InvalidServiceException('Invalid service: ' . $serviceName);
         }
 
-        return self::$services[$serviceName] = call_user_func(self::$services[$serviceName]);
+        return self::$services[$serviceName] = is_callable(self::$services[$serviceName]) ? call_user_func(self::$services[$serviceName]) : self::$services[$serviceName];
     }
 
     /**
