@@ -40,7 +40,7 @@ abstract class BaseReactor
                 //crawl the config directory if it exists
                 $files = $capsuleArray ? $capsuleArray['file'] : [];
                 foreach($files as $file) {
-                    $toCache .= str_replace(array("<?php", "?>"), '', file_get_contents($capsuleDir . $file)) . "\n";
+                    $toCache .= "namespace { " . str_replace(array("<?php", "?>"), '', file_get_contents($capsuleDir . $file)) . " };" . "\n";
                     require_once $capsuleDir . $file;
                 }
             }

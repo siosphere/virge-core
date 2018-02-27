@@ -63,17 +63,9 @@ class Virge
     /**
      * Register a service
      */
-    public static function registerService(string $serviceName, $serviceClass) 
+    public static function registerService(string $serviceName, callable $serviceLoader) 
     {
-        if(is_object($serviceClass)){
-            return self::$services[$serviceName] = $serviceClass;
-        }
-
-        if(is_callable($serviceClass)) {
-            return self::$services[$serviceName] = $serviceClass;
-        }
-        
-        return self::$services[$serviceName] = new $serviceClass();
+        return self::$services[$serviceName] = $serviceLoader;
     }
 
     /**
@@ -111,11 +103,7 @@ class Virge
             throw new InvalidServiceException('Invalid service: ' . $serviceName);
         }
 
-        if(is_callable(self::$services[$serviceName])) {
-            return self::$services[$serviceName] = call_user_func(self::$services[$serviceName]);
-        }
-
-        return self::$services[$serviceName];
+        return self::$services[$serviceName] = call_user_func(self::$services[$serviceName]);
     }
 
     /**
