@@ -52,6 +52,15 @@ abstract class BaseReactor
         
         if(!$cached && Config::get('app', 'cache_reactor') === true) {
             //save cache
+            
+            if(!is_dir($cachePath)) {
+                mkdir($cachePath, 0777, true);
+            }
+            
+            if(!is_writeable($cachePath)) {
+                chmod($cachePath, 0777);
+            }
+
             file_put_contents($cachePath . 'reactor.cache.php', "<?php\n" . $toCache);
         }
     }
