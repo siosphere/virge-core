@@ -108,7 +108,7 @@ class Model {
             $i++;
         }
 
-        if (isset($this->$v)) {
+        if (property_exists($this, $v)) {
             return $this->$v;
         }
         
@@ -161,6 +161,10 @@ class Model {
             }
             $v .= strtolower($str);
             $i++;
+        }
+
+        if(!property_exists($this, $v)) {
+            $this->$v = [];
         }
         
         if (!is_array($this->$v)) {
@@ -259,6 +263,6 @@ class Model {
             throw new \InvalidArgumentException("key must be a string");
         }
         
-        return isset($this->$key) ? $this->$key : $defaultValue;
+        return property_exists($this, $key) ? $this->$key : $defaultValue;
     }
 }
